@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+	
+  <meta http-equiv="CONTENT-TYPE"
+ content="text/html; charset=iso-8859-1">
+  <title></title>
+	 	
+  <meta name="GENERATOR" content="StarOffice/5.2 (Win32)">
+	
+  <meta name="AUTHOR" content="Robert Paley">
+	
+  <meta name="CREATED" content="20020728;14095738">
+	
+  <meta name="CHANGEDBY" content="Robert Paley">
+	
+  <meta name="CHANGED" content="20020728;15514460">
+	
+  <style>
+
+	<!--
+
+		P.sdfootnote { margin-left: 0.2in; text-indent: -0.2in; margin-bottom: 0in; font-size: 10pt }
+
+		A.sdfootnoteanc { font-size: 57% }
+
+	-->
+
+	</style>
+</head>
+<body>
+<p align="right"><font size="3">B"H</font></p>
+<h1 style="text-align: center;"><font size="4" style="font-size: 16pt;">Description
+of single_port memory and test environment.</font></h1>
+<h2>Abstract: </h2>
+<p>A single port memory with testbench is described. The memory is
+implemented as three different architectures.</p>
+<h2>Port Interface:</h2>
+<table width="757" border="1" cellpadding="5" cellspacing="4">
+	<col width="108"> 	<col width="118"> 	<col width="483"> 	<thead> 		<tr
+ valign="top">
+			<th width="108"> 				
+    <p>Port Name</p>
+			</th>
+			<th width="118"> 				
+    <p>Type</p>
+			</th>
+			<th width="483"> 				
+    <p>Description</p>
+			</th>
+		</tr>
+	</thead> 	<tbody>
+		<tr valign="top">
+			<td width="108"> 				
+      <p>rnwtQ</p>
+			</td>
+			<td width="118"> 				
+      <p>Time</p>
+			</td>
+			<td width="483"> 				
+      <p>Time delay from rnw = read until data appears on q data bus.</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="108"> 				
+      <p>d</p>
+			</td>
+			<td width="118"> 				
+      <p>data_inter_typ</p>
+			</td>
+			<td width="483"> 				
+      <p>Input data bus, type specified in single_port_pkg</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="108"> 				
+      <p>q</p>
+			</td>
+			<td width="118"> 				
+      <p>data_inter_typ</p>
+			</td>
+			<td width="483"> 				
+      <p>Output data bus, type specified in single_port_pkg</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="108"> 				
+      <p>a</p>
+			</td>
+			<td width="118"> 				
+      <p>addr_inter_typ</p>
+			</td>
+			<td width="483"> 				
+      <p>Address bus, type specified in single_port_pkg</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="108"> 				
+      <p>rnw</p>
+			</td>
+			<td width="118"> 				
+      <p>STD_LOGIC</p>
+			</td>
+			<td width="483"> 				
+      <p>Read not write port</p>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="108"> 				
+      <p>dealloc_mem</p>
+			</td>
+			<td width="118"> 				
+      <p>BOOLEAN</p>
+			</td>
+			<td width="483"> 				
+      <p>When set to true, deallocate linked list memory.</p>
+			</td>
+		</tr>
+	
+  </tbody>
+</table>
+<h2>Functional Description:</h2>
+<p>The single_port memory is implemented as three different
+architecures. The first architecture is called ArrayMemNoFlag, and
+implements the memory core as an array of STD_LOGIC_VECTOR. The memory
+is asynchronous and triggered on rnw'transaction. When rnw = '0', the
+data on bus "d" is loaded into the memory at the location specified by
+the addres bus "a". When rnw = '1', the data located in memory address
+"a" is loaded onto the output data bus "q". If a memory location is read
+which was not written to during the current simulation, 'U' are loaded
+onto the memory bus.</p>
+<p>The second architecture is called ArrayMem, and implements the
+memory core as an array of BIT_VECTOR. This arrangement allows less
+workstation memory to be used than the ArrayMemNoFlag architecture. The
+memory is asynchronous and triggered on rnw'transaction. When rnw = '0',
+the data on bus "d" is loaded into the memory at the location specified
+by the addres bus "a". When rnw = '1', the data located in memory
+address "a" is loaded onto the output data bus "q". If a memory location
+is read which was not written to during the current simulation, 'U' are
+loaded onto the memory bus.</p>
+<p>The third architecture is called LinkedList, and implements the
+memory core as a linked list of arrays of BIT_VECTOR. Each array in the
+linked list is a page of memory whose size is specified in
+single_port_pkg. This arrangement allows less workstation memory to be
+used than either the ArrayMemNoFlag or ArrayMem architectures. The
+memory is asynchronous and triggered on rnw'transaction. When rnw = '0',
+the data on bus "d" is loaded into the memory at the location specified
+by the addres bus "a". When rnw = '1', the data located in memory
+address "a" is loaded onto the output data bus "q". If a memory location
+is read which was not written to during the current simulation, 'U' are
+loaded onto the memory bus. To de-allocate the memory in the linked
+list, set dealloc_mem to true. </p>
+<h2>Functional Timing:</h2>
+<p>The single port memory is asynchronous and is triggered on
+rnw'transaction. When rnw is cleared to '0', the write occurs at the
+same time as rnw'transaction. When a read occurs, with rnw = '1' , data
+appears on the Q bus rnwtQ ns after rnw is set to '1'. The below sample
+timing diagram illustrates both a read and write operation.</p>
+<p><img src="../images/timing.jpg" name="Graphic1" align="left"
+ width="958" height="251" border="0"><br clear="left">
+</p>
+<h2>Testbench Description:</h2>
+<p>The test bench is arranged as a client server architecture as
+specified by Bergeron<a class="sdfootnoteanc" name="sdfootnote1anc"
+ href="#sdfootnote1sym"><sup>1</sup></a>. A diagram illustrating the
+testbench is given below.<br>
+<br>
+<img src="../images/tbschematic.jpg" name="Graphic2" align="left"
+ width="838" height="371" border="0"><br clear="left">
+Two tests are specified in tc_single_port component. The first test
+writes data to two logical memory pages, and then reads them back
+verifying the correct data. The test case writes an error message to the
+console for every miscompare. The second case verifies that the
+single_port memory model outputs unknowns to the q bus if a read occurs
+for an unwritten memory location. Six configurations are specified in
+the test bench architecture tb_single_port, running both tests for each
+single_port architecture. <br>
+</p>
+<h2>Usage:</h2>
+<p>A Makefile is used to compile and run all of the tests in a Unix or
+like environment, such as Cygwin. The compilation and simulation is
+targetted to the SymphonyEDA tool available at <a
+ href="www.symphonyeda.com">www.symphonyeda.com</a> .</p>
+<p>The source files and Makefile are located in {top}/VHDL<br>
+<br>
+To compile: make com</p>
+<p>To simulate all of the tests: make sim<br>
+</p>
+<p>To clean the compiled library: make clean</p>
+<p>The tests are labeled :</p>
+<ul>
+  <li>ll_error</li>
+  <li>ll_main</li>
+  <li>mem_main<br>
+  </li>
+  <li>mem_error<br>
+  </li>
+  <li>memnoflag_main<br>
+  </li>
+  <li>memnoflag_error<br>
+  </li>
+</ul>
+<p>To simulate any of these tests, type make {testname}</p>
+<p>Please contact Robert Paley at <a href="mailto:rpaley_yid@yahoo.com">rpaley_yid@opencores.org</a>
+if you have any questions or comments. </p>
+<div id="sdfootnote1"> 	
+<p class="sdfootnote" style="margin-bottom: 0.2in;"><a
+ class="sdfootnotesym" name="sdfootnote1sym" href="#sdfootnote1anc">1</a>Writing
+	Testbenches , Functional Verification of HDL Testbenches. Chapter 6 	&#8211;
+ISBN 0-7923-7766-4</p>
+</div>
+</body>
+</html>
