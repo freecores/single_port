@@ -47,6 +47,9 @@
 -- CVS Revision History
 --
 -- $Log: not supported by cvs2svn $
+-- Revision 1.2  2005/10/12 19:39:27  mgeng
+-- Buses unconstrained, LGPL header added
+--
 -- Revision 1.1.1.1  2003/01/14 21:48:11  rpaley_yid
 -- initial checkin 
 --
@@ -62,7 +65,6 @@ LIBRARY IEEE;
 
   PACKAGE single_port_pkg IS 
     CONSTANT PAGEDEPTH : INTEGER := 256; -- memory page depth
-    CONSTANT PAGENUM : INTEGER := 4096; -- number of pages in memory.
     -- Address bus type for internal memory
     SUBTYPE addr_typ IS NATURAL;
     -- Operations testbench can do.

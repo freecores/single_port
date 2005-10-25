@@ -56,6 +56,9 @@
 -- CVS Revision History
 --
 -- $Log: not supported by cvs2svn $
+-- Revision 1.2  2005/10/12 19:39:27  mgeng
+-- Buses unconstrained, LGPL header added
+--
 -- Revision 1.1.1.1  2003/01/14 21:48:11  rpaley_yid
 -- initial checkin 
 --
@@ -86,7 +89,7 @@ ARCHITECTURE ArrayMemNoFlag OF single_port IS
 BEGIN
   
   mem_proc : PROCESS(d, a, rnw)
-    TYPE mem_typ IS ARRAY ( 0 TO PAGENUM*PAGEDEPTH-1 ) OF STD_LOGIC_VECTOR(d'RANGE);
+    TYPE mem_typ IS ARRAY ( 0 TO 2**a'length-1 ) OF STD_LOGIC_VECTOR(d'RANGE);
     VARIABLE mem : mem_typ;
   BEGIN
     IF ( rnw = '0') THEN -- Write
@@ -102,8 +105,8 @@ ARCHITECTURE ArrayMem OF single_port IS
 BEGIN
   
   mem_proc : PROCESS(d, a, rnw)
-  TYPE mem_typ  IS ARRAY ( 0 TO PAGENUM*PAGEDEPTH-1 ) OF BIT_VECTOR(d'RANGE);
-  TYPE flag_typ IS ARRAY ( 0 TO PAGENUM*PAGEDEPTH-1 ) OF BOOLEAN;
+  TYPE mem_typ  IS ARRAY ( 0 TO 2**a'length-1 ) OF BIT_VECTOR(d'RANGE);
+  TYPE flag_typ IS ARRAY ( 0 TO 2**a'length-1 ) OF BOOLEAN;
   VARIABLE mem  : mem_typ;
   VARIABLE flag : flag_typ;
   BEGIN
