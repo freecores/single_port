@@ -48,6 +48,9 @@
 -- CVS Revision History
 --
 -- $Log: not supported by cvs2svn $
+-- Revision 1.2  2005/10/12 19:39:27  mgeng
+-- Buses unconstrained, LGPL header added
+--
 -- Revision 1.1.1.1  2003/01/14 21:48:10  rpaley_yid
 -- initial checkin 
 --
@@ -63,14 +66,15 @@ USE IEEE.STD_LOGIC_1164.ALL;
 USE WORK.single_port_pkg.all;
 
 PACKAGE linked_list_mem_pkg IS
+  CONSTANT PAGEDEPTH : INTEGER := 256; -- memory page depth
   -- pointer to one data word in the memory
   -- The reason for using a pointer here is that it seems to be the only way to keep the model
   -- independent of the data width
   TYPE data_ptr IS ACCESS BIT_VECTOR;
   -- data memory array type definition
   TYPE mem_array_typ IS ARRAY (0 TO PAGEDEPTH-1) OF data_ptr;
-  -- Define memory page linked list cell. This cell contains,
-  -- the mem_array, starting page address, valid data array, and 
+  -- Define memory page linked list cell. This cell contains
+  -- the mem_array, starting page address, valid data array and 
   -- the pointer to the next element in the linked list.
   TYPE mem_page_typ;
   -- pointer to next item in the linked list.
@@ -90,7 +94,7 @@ PACKAGE linked_list_mem_pkg IS
 
 END PACKAGE linked_list_mem_pkg;
 
-PACKAGE BODY LINKED_LIST_MEM_PKG IS
+PACKAGE BODY linked_list_mem_pkg IS
   -- --------------------------------------------------
   -- The purpose of this procedure is to write a memory location from 
   -- the linked list, if the particular page does not exist, create it.
@@ -167,4 +171,4 @@ PACKAGE BODY LINKED_LIST_MEM_PKG IS
       deallocate(delete_cell_v); -- Deallocate current cell from memory.
     END LOOP;
   END PROCEDURE deallocate_mem;
-END PACKAGE BODY LINKED_LIST_MEM_PKG;
+END PACKAGE BODY linked_list_mem_pkg;

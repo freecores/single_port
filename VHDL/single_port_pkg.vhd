@@ -47,6 +47,9 @@
 -- CVS Revision History
 --
 -- $Log: not supported by cvs2svn $
+-- Revision 1.3  2005/10/25 18:26:52  mgeng
+-- PAGENUM constant removed because the address bus width provides this information
+--
 -- Revision 1.2  2005/10/12 19:39:27  mgeng
 -- Buses unconstrained, LGPL header added
 --
@@ -63,18 +66,17 @@ LIBRARY IEEE;
   USE IEEE.STD_LOGIC_1164.ALL;
   USE IEEE.NUMERIC_STD.ALL;
 
-  PACKAGE single_port_pkg IS 
-    CONSTANT PAGEDEPTH : INTEGER := 256; -- memory page depth
-    -- Address bus type for internal memory
-    SUBTYPE addr_typ IS NATURAL;
-    -- Operations testbench can do.
-    TYPE do_typ IS ( init , read , write , dealloc , end_test );
+PACKAGE single_port_pkg IS 
+  -- Address bus type for internal memory
+  SUBTYPE addr_typ IS NATURAL;
+  -- Operations testbench can do.
+  TYPE do_typ IS ( init , read , write , dealloc , end_test );
 
-    TYPE to_srv_typ IS RECORD -- Record passed from test case to test bench
-      do    : do_typ;
-      addr  : INTEGER;
-      data  : INTEGER;
-      event : BOOLEAN;
+  TYPE to_srv_typ IS RECORD -- Record passed from test case to test bench
+    do    : do_typ;
+    addr  : INTEGER;
+    data  : INTEGER;
+    event : BOOLEAN;
   END RECORD to_srv_typ;
 END PACKAGE single_port_pkg;
 
