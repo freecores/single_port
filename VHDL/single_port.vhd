@@ -56,6 +56,9 @@
 -- CVS Revision History
 --
 -- $Log: not supported by cvs2svn $
+-- Revision 1.3  2005/10/25 18:26:52  mgeng
+-- PAGENUM constant removed because the address bus width provides this information
+--
 -- Revision 1.2  2005/10/12 19:39:27  mgeng
 -- Buses unconstrained, LGPL header added
 --
@@ -78,24 +81,31 @@ ENTITY single_port IS
   GENERIC (
     rnwtQ : TIME := 1 NS);
   PORT (
-    d           : IN  STD_LOGIC_VECTOR;
-    q           : OUT STD_LOGIC_VECTOR;
-    a           : IN  STD_LOGIC_VECTOR;
-    rnw         : IN  STD_LOGIC;
-    dealloc_mem : IN  BOOLEAN := FALSE);
+    d           : IN  STD_LOGIC_VECTOR;   -- data bus input
+    q           : OUT STD_LOGIC_VECTOR;   -- data bus output
+    a           : IN  STD_LOGIC_VECTOR;   -- address bus
+    nce         : IN  STD_LOGIC;          -- not chip enable
+    nwe         : IN  STD_LOGIC;          -- not write enable
+    noe         : IN  STD_LOGIC;          -- not output enable
+    dealloc_mem : IN  BOOLEAN := FALSE);  -- control signal for deallocating memory,
+                                          -- only used in the linked list implementation
 END ENTITY single_port;
 
 ARCHITECTURE ArrayMemNoFlag OF single_port IS
 BEGIN
   
-  mem_proc : PROCESS(d, a, rnw)
+  mem_proc : PROCESS(d, a, nce, nwe, noe)
     TYPE mem_typ IS ARRAY ( 0 TO 2**a'length-1 ) OF STD_LOGIC_VECTOR(d'RANGE);
     VARIABLE mem : mem_typ;
   BEGIN
-    IF ( rnw = '0') THEN -- Write
+    IF ( nce = '0' ) AND ( nwe = '0' ) THEN   -- Write
       mem(TO_INTEGER(unsigned(a))) := d;
-    ELSE -- Read
+    END IF;
+
+    IF ( nce = '0' ) AND ( noe = '0' ) THEN   -- Read
       q <= mem(TO_INTEGER(unsigned(a))) AFTER rnwtQ;
+    ELSE
+      q <= (q'RANGE => 'Z') AFTER rnwtQ;
     END IF;
   END PROCESS mem_proc;
 
@@ -104,22 +114,26 @@ END ArrayMemNoFlag;
 ARCHITECTURE ArrayMem OF single_port IS
 BEGIN
   
-  mem_proc : PROCESS(d, a, rnw)
+  mem_proc : PROCESS(d, a, nce, nwe, noe)
   TYPE mem_typ  IS ARRAY ( 0 TO 2**a'length-1 ) OF BIT_VECTOR(d'RANGE);
   TYPE flag_typ IS ARRAY ( 0 TO 2**a'length-1 ) OF BOOLEAN;
   VARIABLE mem  : mem_typ;
   VARIABLE flag : flag_typ;
   BEGIN
-    IF ( rnw = '0') THEN -- Write
-      mem(TO_INTEGER(unsigned(a))) := TO_BITVECTOR(d);
+    IF ( nce = '0' ) AND ( nwe = '0' ) THEN   -- Write
+      mem( TO_INTEGER(unsigned(a))) := TO_BITVECTOR(d);
       flag(TO_INTEGER(unsigned(a))) := true; -- set valid memory location flag
-    ELSE -- read data, either valid or 'U'
-      IF ( flag(TO_INTEGER(unsigned(a))) = true ) THEN
+    END IF;
+
+    IF ( nce = '0' ) AND ( noe = '0' ) THEN   -- Read
+      IF ( flag(TO_INTEGER(unsigned(a))) = true ) THEN  -- read data, either valid or 'U'
         q <= TO_STDLOGICVECTOR(mem(TO_INTEGER(unsigned(a)))) AFTER rnwtQ;
       ELSE -- reading invalid memory location
-        q <= (q'RANGE => 'U') after rnwtQ;
+        q <= (q'RANGE => 'U') AFTER rnwtQ;
       END IF;
-    END IF; 
+    ELSE
+      q <= (q'RANGE => 'Z') AFTER rnwtQ;
+    END IF;
   END PROCESS mem_proc;
 END ArrayMem;
 
@@ -128,7 +142,7 @@ ARCHITECTURE LinkedList OF single_port IS
   CONSTANT READ_MEM  : BOOLEAN := false;
 BEGIN
   
-  mem_proc : PROCESS(d, a, rnw, dealloc_mem)
+  mem_proc : PROCESS(d, a, nce, nwe, noe, dealloc_mem)
     VARIABLE mem_page_v : mem_page_ptr;
     VARIABLE d_v : STD_LOGIC_VECTOR(d'RANGE);
     VARIABLE a_v : addr_typ;
@@ -136,21 +150,24 @@ BEGIN
     IF NOT dealloc_mem THEN
       d_v :=  d;
       a_v := TO_INTEGER(unsigned(a));
-      IF ( rnw = '0' ) THEN -- write to linked list memory
+      IF ( nce = '0' ) AND ( nwe = '0' ) THEN   -- Write
         rw_mem( data       => d_v,
                 addr       => a_v,
                 next_cell  => mem_page_v,
                 write_flag => WRITE_MEM); 
-      ELSE -- read from linked list memory
+      END IF;
+
+      IF ( nce = '0' ) AND ( noe = '0' ) THEN   -- Read
         rw_mem( data       => d_v,
                 addr       => a_v,
                 next_cell  => mem_page_v,
                 write_flag => READ_MEM);
-        q <= d_v after rnwtQ; 
+        q <= d_v AFTER rnwtQ; 
+      ELSE
+        q <= (q'RANGE => 'Z') AFTER rnwtQ;
       END IF;
     ELSE -- Deallocate memory from work station memory.
       deallocate_mem(mem_page_v);
     END IF; 
   END PROCESS mem_proc;
- 
 END LinkedList;

@@ -49,6 +49,9 @@
 -- CVS Revision History
 --
 -- $Log: not supported by cvs2svn $
+-- Revision 1.2  2005/10/12 19:39:27  mgeng
+-- Buses unconstrained, LGPL header added
+--
 -- Revision 1.1.1.1  2003/01/14 21:48:11  rpaley_yid
 -- initial checkin 
 --
@@ -80,7 +83,9 @@ COMPONENT single_port IS
     d           : IN STD_LOGIC_VECTOR;
     q           : OUT STD_LOGIC_VECTOR;
     a           : IN STD_LOGIC_VECTOR;
-    rnw         : IN STD_LOGIC;
+    nce         : IN  STD_LOGIC;
+    nwe         : IN  STD_LOGIC;
+    noe         : IN  STD_LOGIC;
     dealloc_mem : BOOLEAN);
 END COMPONENT single_port;  
 
@@ -92,21 +97,23 @@ END COMPONENT tc_single_port;
   CONSTANT DATA_WIDTH : INTEGER := 32;
   CONSTANT ADDR_WIDTH : INTEGER := 16;
 
-  SIGNAL d           : STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-  SIGNAL q           : STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-  SIGNAL a           : STD_LOGIC_VECTOR(ADDR_WIDTH - 1 DOWNTO 0);
-  SIGNAL rnw         : STD_LOGIC;
-  SIGNAL dealloc_mem : BOOLEAN;
-  SIGNAL to_srv      : to_srv_typ;
-  SIGNAL frm_srv     : STD_LOGIC_VECTOR(d'RANGE);
-  SIGNAL tie_vdd     : STD_LOGIC := '1';
+  SIGNAL d             : STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+  SIGNAL q             : STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+  SIGNAL a             : STD_LOGIC_VECTOR(ADDR_WIDTH - 1 DOWNTO 0);
+  SIGNAL nce, nwe, noe : STD_LOGIC;
+  SIGNAL dealloc_mem   : BOOLEAN;
+  SIGNAL to_srv        : to_srv_typ;
+  SIGNAL frm_srv       : STD_LOGIC_VECTOR(d'RANGE);
+  SIGNAL tie_vdd       : STD_LOGIC := '1';
 BEGIN
   dut : single_port 
     PORT MAP (
       d           => d,
       a           => a,
       q           => q,
-      rnw         => rnw,
+      nce         => nce,
+      nwe         => nwe,
+      noe         => noe,
       dealloc_mem => dealloc_mem);
 
   tc : tc_single_port
@@ -128,13 +135,17 @@ BEGIN
       WHEN read => -- perform memory read
         d <= STD_LOGIC_VECTOR(TO_SIGNED(to_srv.data, d'length));
         a <= STD_LOGIC_VECTOR(TO_UNSIGNED(to_srv.addr, a'length));
-        rnw <= '1';
+        nce <= '0';
+        noe <= '0';
+        nwe <= '1';
         -- Wait for data to appear 
         WAIT FOR ACCESS_DELAY;
       WHEN write => -- perform memory write
         d <= STD_LOGIC_VECTOR(TO_SIGNED(to_srv.data, d'length));
         a <= STD_LOGIC_VECTOR(TO_UNSIGNED(to_srv.addr, a'length));
-        rnw <= '0';
+        nce <= '0';
+        noe <= '1';
+        nwe <= '0';
         WAIT FOR ACCESS_DELAY;
       WHEN dealloc => -- deallocate the linked list for the LL architecture
         dealloc_mem <= true;
