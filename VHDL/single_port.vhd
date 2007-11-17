@@ -56,6 +56,9 @@
 -- CVS Revision History
 --
 -- $Log: not supported by cvs2svn $
+-- Revision 1.4  2005/11/19 15:18:54  mgeng
+-- rnw replaced by nce, nwe and noe, tristate drivers added
+--
 -- Revision 1.3  2005/10/25 18:26:52  mgeng
 -- PAGENUM constant removed because the address bus width provides this information
 --
@@ -149,7 +152,9 @@ BEGIN
   BEGIN
     IF NOT dealloc_mem THEN
       d_v :=  d;
-      a_v := TO_INTEGER(unsigned(a));
+      if (nce = '0') then
+         a_v := TO_INTEGER(unsigned(a));
+      end if;
       IF ( nce = '0' ) AND ( nwe = '0' ) THEN   -- Write
         rw_mem( data       => d_v,
                 addr       => a_v,
